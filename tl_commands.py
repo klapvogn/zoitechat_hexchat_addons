@@ -6,6 +6,11 @@ __module_description__ = "FLS commonly used commands"
 __author__ = 'Piratpalle'
 
 
+def warn(msg):
+    """Print a red, local-only message. Only you see it — it is never sent to the channel."""
+    print(f"\x0304{msg}\x0f")
+
+
 def is_user_in_channel(username):
     """Check if a user is present in the current channel or if we're in a PM"""
     channel = hexchat.get_info('channel')
@@ -21,25 +26,77 @@ def is_user_in_channel(username):
             return True
     return False
 
+#------
+# Rules
+#------
+def rules_cmd(word, word_eol, userdata):
+    if len(word) < 2:
+        warn("Usage: /rules <username>")
+        return hexchat.EAT_ALL
+    
+    #username = word[1]
+    username = word[1].strip()  # Use word[1] and remove any leading/trailing spaces
+
+    # Check if user is in channel
+    if not is_user_in_channel(username):
+        warn(f"Error: User '{username}' is not in the channel")
+        return hexchat.EAT_ALL
+        
+    response = (
+        f"\x0314{username}, Here are a few links to help you get started. "
+        "\x02Site Rules\x02: https://wiki.torrentleech.org/doku.php/siterules | "
+        "\x02Wiki\x02: http://wiki.torrentleech.org/doku.php | "
+        "\x02New User Guide\x02: https://wiki.torrentleech.org/doku.php/newly_invited_users | "
+        "\x02How long do I need to seed\x02: http://wiki.torrentleech.org/doku.php/user_classes | "
+        "\x02How to maintain a good ratio\x02: https://forums.torrentleech.org/t/how-to-maintain-your-ratio/78082 | "
+        "\x02HnR\x02: https://wiki.torrentleech.org/doku.php/hnr | "
+        "\x02Our Forum\x02: https://forums.torrentleech.org/ | "
+        "\x02Freeleech - (bookmark this - Use it to built ratio)\x02: https://www.torrentleech.org/torrents/browse/index/facets/tags%3AFREELEECH_added%3A%255BNOW%252FMINUTE-10MINUTES%2520TO%2520NOW%252FMINUTE%252B1MINUTE%255D - "
+        "Please ensure you give them all a good read!\x03"
+    )
+    
+    hexchat.command(f"say {response}")
+    return hexchat.EAT_ALL
+
+# Register the command
+hexchat.hook_command("rules", rules_cmd, help="/rules <username> - give the user our rules links")
+
 #----------
 # Speedtest
 #----------
 def speedtest_cmd(word, word_eol, userdata):
     if len(word) < 2:
-        hexchat.command("say Usage: /speedtest <username>")
+        warn("Usage: /speedtest <username>")
         return hexchat.EAT_ALL
     
     username = word[1].strip()  # Use word[1] and remove any leading/trailing spaces
 
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL
 
     # Send the formatted welcome message    
-    response = f"I need the following from you {username}, speedtest from https://speedtest.net/run/ and paste the result URL here"
+    line1 = (
+        f"1.: {username}, Open speedtest.net in a new tab"
+    )
+    
+    line2 = (
+        "2.: Run the test and wait for it to complete"
+    )
+    
+    line3 = (
+        "3.: Once finished, copy the URL from your browser's address bar (it will look like speedtest.net/result/XXXXXXX)"
+    )
 
-    hexchat.command(f"say {response}")
+    line4 = (
+        "4.: Paste that link here"
+    )    
+
+    hexchat.command(f"say {line1}")
+    hexchat.command(f"say {line2}")
+    hexchat.command(f"say {line3}")
+    hexchat.command(f"say {line4}")
     return hexchat.EAT_ALL
 
 # Register both commands
@@ -50,14 +107,14 @@ hexchat.hook_command("speedtest", speedtest_cmd, help="/speedtest <username> - R
 #--------
 def hi_cmd(word, word_eol, userdata):
     if len(word) < 2:
-        hexchat.command("say Usage: /hi <username>")
+        warn("Usage: /hi <username>")
         return hexchat.EAT_ALL
     
     username = word[1].strip()  # Use word[1] and remove any leading/trailing spaces
 
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL    
     
     # Send the formatted welcome message
@@ -74,18 +131,18 @@ hexchat.hook_command("hi", hi_cmd, help="/hi <username> - Welcome message")
 #------
 def issue_cmd(word, word_eol, userdata):
     if len(word) < 2:
-        hexchat.command("say Usage: /issue <username>")
+        warn("Usage: /issue <username>")
         return hexchat.EAT_ALL
     
     username = word[1].strip()  # Use word[1] and remove any leading/trailing spaces
 
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL    
     
     # Send the formatted welcome message
-    response = f"I have forwarded your issue to the mods {username}, but it looks like they are away. Can you come back later or tomorrow? Whatever you decide?"
+    response = f"I've forwarded your issue to the mods, {username}, but it looks like they're away. Could you come back later (say, in 3–4 hours) or tomorrow? Whatever works best for you."
     
     hexchat.command(f"say {response}")
     return hexchat.EAT_ALL
@@ -98,18 +155,18 @@ hexchat.hook_command("issue", issue_cmd, help="/issue <username> - issue message
 #----
 def bye_cmd(word, word_eol, userdata):
     if len(word) < 2:
-        hexchat.command("say Usage: /bye <username>")
+        warn("Usage: /bye <username>")
         return hexchat.EAT_ALL
     
     username = word[1].strip()  # Use word[1] and remove any leading/trailing spaces
     
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL
         
     # Send the formatted welcome message
-    response = f"Is there anything else I can help with, {username}? If not, you are free to leave again. Have a good day or evening. You can now close the chat window or type \x02/part\x02. "
+    response = f"Is there anything else I can help with, {username}? If not, you are free to leave again. Have a good day or evening. You can now \x02close the chat window\x02 or type \x02/part\x02. "
     
     hexchat.command(f"say {response}")
     return hexchat.EAT_ALL
@@ -122,14 +179,14 @@ hexchat.hook_command("bye", bye_cmd, help="/bye <username> - Leave message")
 #------
 def idler_cmd(word, word_eol, userdata):
     if len(word) < 2:
-        hexchat.command("say Usage: /idler <username>")
+        warn("Usage: /idler <username>")
         return hexchat.EAT_ALL
     
     username = word[1].strip()  # Use word[1] and remove any leading/trailing spaces
     
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL
         
     # Send the formatted welcome message
@@ -146,7 +203,7 @@ hexchat.hook_command("idler", idler_cmd, help="/idler <username> - Idler message
 #---------
 def newuser_cmd(word, word_eol, userdata):
     if len(word) < 2:
-        print("Usage: /newuser <username>")
+        warn("Usage: /newuser <username>")
         return hexchat.EAT_ALL
     
     #username = word[1]
@@ -154,17 +211,18 @@ def newuser_cmd(word, word_eol, userdata):
 
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL
         
     response = (
         f"\x0314{username}, You have been enabled. Here are a few links to help you get started. "
+        "\x02Site Rules\x02: https://wiki.torrentleech.org/doku.php/siterules | "
         "\x02Wiki\x02: http://wiki.torrentleech.org/doku.php | "
         "\x02New User Guide\x02: https://wiki.torrentleech.org/doku.php/newly_invited_users | "
         "\x02How long do I need to seed\x02: http://wiki.torrentleech.org/doku.php/user_classes | "
         "\x02How to maintain a good ratio\x02: https://forums.torrentleech.org/t/how-to-maintain-your-ratio/78082 | "
         "\x02HnR\x02: https://wiki.torrentleech.org/doku.php/hnr | "
-        "\x02Our Forum\002: https://forums.torrentleech.org/ | "
+        "\x02Our Forum\x02: https://forums.torrentleech.org/ | "
         "\x02Freeleech - (bookmark this - Use it to built ratio)\x02: https://www.torrentleech.org/torrents/browse/index/facets/tags%3AFREELEECH_added%3A%255BNOW%252FMINUTE-10MINUTES%2520TO%2520NOW%252FMINUTE%252B1MINUTE%255D - "
         "Please ensure you give them all a good read!\x03"
     )
@@ -180,7 +238,7 @@ hexchat.hook_command("newuser", newuser_cmd, help="/newuser <username> - welcome
 #---------------
 def ratio_cmd(word, word_eol, userdata):
     if len(word) < 3:
-        hexchat.command("say Usage: /ratio <username> <days>")
+        warn("Usage: /ratio <username> <days>")
         return hexchat.EAT_ALL
     
     username = word[1].strip() # Use word[1] and remove any leading/trailing spaces
@@ -188,7 +246,7 @@ def ratio_cmd(word, word_eol, userdata):
 
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL
     
     # Send the message in parts to avoid line wrapping issues with bold formatting
@@ -227,7 +285,7 @@ hexchat.hook_command("ratio", ratio_cmd, help="/ratio <username> <days> - ratio 
 #---------------
 def hnr_cmd(word, word_eol, userdata):
     if len(word) < 3:
-        hexchat.command("say Usage: /hnr <username> <days>")
+        warn("Usage: /hnr <username> <days>")
         return hexchat.EAT_ALL
     
     username = word[1].strip() # Use word[1] and remove any leading/trailing spaces
@@ -235,7 +293,7 @@ def hnr_cmd(word, word_eol, userdata):
 
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL
           
     # Send the message in parts to avoid line wrapping issues with bold formatting
@@ -246,11 +304,10 @@ def hnr_cmd(word, word_eol, userdata):
         "\002New User Guide\002: https://wiki.torrentleech.org/doku.php/newly_invited_users | "
         "\002Common mistakes\002: https://wiki.torrentleech.org/doku.php/common_mistakes | "
         "\002How to maintain a good ratio\002: https://forums.torrentleech.org/t/how-to-maintain-your-ratio/78082 - "
-        "Please ensure you give them all"
+        "Please ensure you give them all a good read! | "
     )
     
     line2 = (
-        "a good read! | "
         "\002Client Related\002: https://seedit4.me/kb/articles/qbittorrent-autobrr-setup/152 | "
         "https://wiki.torrentleech.org/doku.php/autobrr | "
         "https://seedit4.me/kb/articles/optimizing-seedbox-upload-speeds-and-building-ratio/146 | "
@@ -274,7 +331,7 @@ hexchat.hook_command("hnr", hnr_cmd, help="/hnr <username> <days> - ratio notifi
 #----------
 def fl_cmd(word, word_eol, userdata):
     if len(word) < 2:
-        hexchat.command("say Usage: /fl <username>")
+        warn("Usage: /fl <username>")
         return hexchat.EAT_ALL
     
     # Use word[1] instead of word_eol[1] to get just the first argument
@@ -283,11 +340,11 @@ def fl_cmd(word, word_eol, userdata):
 
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL    
 
     line1 = (
-        f"{username}, You need to download our FREELEECH torrents you can find here: https://www.torrentleech.org/torrents/browse/index/facets/tags%3AFREELEECH_added%3A%255BNOW%252FMINUTE-10MINUTES%2520TO%2520NOW%252FMINUTE%252B1MINUTE%255D | keep in mind that these torrents also needs to be seeded as long as your user class tells you to! | Read more here: http://wiki.torrentleech.org/doku.php/user_classes"
+        f"{username}, You can find current FREELEECH torrents here: https://www.torrentleech.org/torrents/browse/index/facets/tags%3AFREELEECH_added%3A%255BNOW%252FMINUTE-10MINUTES%2520TO%2520NOW%252FMINUTE%252B1MINUTE%255D It's a good idea to bookmark this link. Remember: FREELEECH torrents still need to be seeded according to the requirements for your user class. You can read more about seeding rules here: http://wiki.torrentleech.org/doku.php/user_classes"
     )
     line2 = (
         "1.: \"popular torrent\" is not what you think it means. For example A torrent can be \"popular\" in terms of times downloaded, but if you download it after most people already have it, you will not get any upload from it. You want to grab a torrent with in 10 minutes after upload, ideally "
@@ -314,19 +371,23 @@ hexchat.hook_command("fl", fl_cmd, help="/fl <message> - Freeleech Link")
 #------
 def promo_cmd(word, word_eol, userdata):
     if len(word) < 2:
-        hexchat.command("say Usage: /promo <username>")
+        warn("Usage: /promo <username>")
         return hexchat.EAT_ALL
     
     username = word[1].strip()  # Use word[1] and remove any leading/trailing spaces
 
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL
         
-    response = f"{username}, You can use this promoreg: https://www.torrentleech.org/user/account/promoreg"
+    line1 = f"{username}, You can use this promoreg: https://www.torrentleech.org/user/account/promoreg"
+    
+    line2 = f"Before you begin, please make sure to read the full Affiliate Invite Rules and Potential Issues guide, with special attention to Rule #9. You can find it here: https://my.seedit4.me/kb/articles/affiliate-invite-rules-and-potential-issues-to-be-aware-ofAffiliate%20invite%20rules/144"
+    
 
-    hexchat.command(f"say {response}")
+    hexchat.command(f"say {line1}")
+    hexchat.command(f"say {line2}")
     return hexchat.EAT_ALL
 
 hexchat.hook_command("promo", promo_cmd, help="/promo <username> - promo registration link")
@@ -336,14 +397,14 @@ hexchat.hook_command("promo", promo_cmd, help="/promo <username> - promo registr
 #--------------------
 def chgmail_cmd(word, word_eol, userdata):
     if len(word) < 2:
-        hexchat.command("say Usage: /chgmail <username>")
+        warn("Usage: /chgmail <username>")
         return hexchat.EAT_ALL
     
     username = word[1].strip()  # Use word[1] and remove any leading/trailing spaces
 
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL
         
     response = f"{username}, Email change: Send me an PM with the current mail and new mail address: https://www.torrentleech.org/user/messages/index/new/piratpalle"
@@ -360,14 +421,14 @@ hexchat.hook_command("chgmail", chgmail_cmd, help="/chgmail <username> - email c
 def link_cmd(word, word_eol, userdata):
     # Check if we have at least one argument
     if len(word) < 2:
-        hexchat.command("say Usage: /link <username>")
+        warn("Usage: /link <username>")
         return hexchat.EAT_ALL
     
     username = word[1].strip()  # Use word[1] and remove any leading/trailing spaces
 
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL
         
     response = f"{username}, Here are some usefull links: \002Wiki\002: http://wiki.torrentleech.org/doku.php | \002New User Guide\002: https://wiki.torrentleech.org/doku.php/newly_invited_users | \002How long do I need to seed\002: http://wiki.torrentleech.org/doku.php/user_classes | \002Common Mistakes\002: https://wiki.torrentleech.org/doku.php/common_mistakes | \002How to maintain a good ratio\002: https://forums.torrentleech.org/t/how-to-maintain-your-ratio/78082 | \002Our Forum\002: https://forums.torrentleech.org/ | \002Freeleech - (bookmark this)\002: https://www.torrentleech.org/torrents/browse/index/facets/tags%3AFREELEECH_added%3A%255BNOW%252FMINUTE-10MINUTES%2520TO%2520NOW%252FMINUTE%252B1MINUTE%255D"
@@ -380,27 +441,29 @@ hexchat.hook_command("link", link_cmd, help="/link <username> - Shows TL links")
 
 #-------------
 # IRC Register
+# due to spamming the chan with joins and parts fix your scripts so it does not happen again once the ban is lifted if it does happen again the next ban will be 7 days then 14 then life
 #-------------
 def irc_cmd(word, word_eol, userdata):
     # Check if we have at least one argument
     if len(word) < 2:
-        hexchat.command("say Usage: /irc <username>")
+        warn("Usage: /irc <username>")
         return hexchat.EAT_ALL
     
     username = word[1].strip()  # Use word[1] and remove any leading/trailing spaces
 
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL
     
-    line1 = f"{username}, here is how to register your iRC nick "
-    line1 = f"1.: your iRC nickname should be the same as your TL site username. You can set it with \002/nick <site username>\002 (Change <site username>) "
+    intro = f"{username}, here is how to register your iRC nick "
+    line1 = "1.: your iRC nickname should be the same as your TL site username. You can set it with \002/nick <site username>\002 (Change <site username>) "
     line2 = "2.: Register your irc nickname : \"\002/msg NickServ REGISTER password email\002\" - You need to replace \"\002password\002\" and \"\002email\002\" "
     line3 = "3.: If you close your client, and rejoins you need to identify to NickServ, first \002/nick <site username>\002 then \"\002/msg NickServ IDENTIFY your_password\002\" "
-    line4 = "4.: To join our main channel, #torrentleech. You need to msg TL-Monkey -> \"\002/msg TL-Monkey !invite <your IRCKEY>\002\" How to get IRCKEY, see link below "
+    line4 = "4.: To join our main channel, #torrentleech. You need to msg TL-Monkey -> \"\002/msg TL-Monkey !invite <YOUR IRCKEY>\002\" How to get IRCKEY, see link below "
     line5 = "More info here : https://wiki.torrentleech.org/doku.php/joining_irc"
 
+    hexchat.command(f"say {intro}")
     hexchat.command(f"say {line1}")
     hexchat.command(f"say {line2}")
     hexchat.command(f"say {line3}")
@@ -415,14 +478,14 @@ hexchat.hook_command("irc", irc_cmd, help="/irc <username> - Shows TL iRC Guides
 #------
 def slots_cmd(word, word_eol, userdata):
     if len(word) < 2:
-        hexchat.command("say Usage: /slots <username>")
+        warn("Usage: /slots <username>")
         return hexchat.EAT_ALL
     
     username = word[1].strip()  # Use word[1] and remove any leading/trailing spaces
 
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL
         
     response = f"{username}, Read more here on how slots works: https://wiki.torrentleech.org/doku.php/slots"
@@ -437,14 +500,14 @@ hexchat.hook_command("slots", slots_cmd, help="/slots <username> - slots link")
 #----
 def hnrhelp_cmd(word, word_eol, userdata):
     if len(word) < 2:
-        hexchat.command("say Usage: /hnrhelp <username>")
+        warn("Usage: /hnrhelp <username>")
         return hexchat.EAT_ALL
     
     username = word[1].strip()  # Use word[1] and remove any leading/trailing spaces
 
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL
     
     line1 = "1: You need to clear as many HnR torrents as you can with either surplus or TL-Points! sort your HnR list from smallest to largest (See link to see where to press: https://i.imgur.com/sFnIsDE.png)"
@@ -465,14 +528,14 @@ hexchat.hook_command("hnrhelp", hnrhelp_cmd, help="/hnrhelp <username> - hnr lin
 #-----------------------
 def class_cmd(word, word_eol, userdata):
     if len(word) < 2:
-        hexchat.command("say Usage: /class <username>")
+        warn("Usage: /class <username>")
         return hexchat.EAT_ALL
     
     username = word[1].strip()  # Use word[1] and remove any leading/trailing spaces
 
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL
         
     response = f"{username}, Read more here on how User classes works: http://wiki.torrentleech.org/doku.php/user_classes"
@@ -487,14 +550,14 @@ hexchat.hook_command("class", class_cmd, help="/class <username> - user class li
 #-------------
 def imgur_cmd(word, word_eol, userdata):
     if len(word) < 2:
-        hexchat.command("say Usage: /imgur <username>")
+        warn("Usage: /imgur <username>")
         return hexchat.EAT_ALL
     
     username = word[1].strip()  # Use word[1] and remove any leading/trailing spaces
 
     # Check if user is in channel
     if not is_user_in_channel(username):
-        print(f"Error: User '{username}' is not in the channel")
+        warn(f"Error: User '{username}' is not in the channel")
         return hexchat.EAT_ALL
         
     line1  = f"{username}, You can share image(s) with us, by uploading it to: https://imgur.com/upload"
@@ -505,3 +568,67 @@ def imgur_cmd(word, word_eol, userdata):
     return hexchat.EAT_ALL
 
 hexchat.hook_command("imgur", imgur_cmd, help="/imgur <username> - upload of images")
+
+#--------
+# Pending
+#--------
+def pending_cmd(word, word_eol, userdata):
+    if len(word) < 2:
+        warn("Usage: /pending <username>")
+        return hexchat.EAT_ALL
+    
+    username = word[1].strip()  # Use word[1] and remove any leading/trailing spaces
+
+    # Check if user is in channel
+    if not is_user_in_channel(username):
+        warn(f"Error: User '{username}' is not in the channel")
+        return hexchat.EAT_ALL
+    
+    line1 = "1: Open an incognito window"
+    line2 = "2: Copy the link from the email you just received"
+    line3 = "3: Paste it into the incognito window"
+
+    hexchat.command(f"say {line1}")
+    hexchat.command(f"say {line2}")
+    hexchat.command(f"say {line3}")
+    return hexchat.EAT_ALL
+
+hexchat.hook_command("pending", pending_cmd, help="/pending <username> - confirm pending account")
+
+#---------
+# Commands list
+#---------
+def cmds_cmd(word, word_eol, userdata):
+    own_nick = hexchat.get_info('nick')
+    
+    # Open a query window with yourself
+    hexchat.command(f"QUERY {own_nick}")
+    
+    # Find the query context and print into it
+    ctx = hexchat.find_context(channel=own_nick)
+    if ctx:
+        ctx.prnt("=== TL Commands ===")
+        ctx.prnt("/rules <user>     - Site rules + links")
+        ctx.prnt("/hi <user>        - Welcome message")
+        ctx.prnt("/bye <user>       - Leave/close message")
+        ctx.prnt("/issue <user>     - Forward issue to mods")
+        ctx.prnt("/idler <user>     - Warn idler")
+        ctx.prnt("/speedtest <user> - Request speedtest")
+        ctx.prnt("/newuser <user>   - New user welcome + links")
+        ctx.prnt("/ratio <user> <days>  - Ratio enabled message")
+        ctx.prnt("/hnr <user> <days>    - HnR enabled message")
+        ctx.prnt("/hnrhelp <user>   - HnR help steps")
+        ctx.prnt("/fl <user>        - Freeleech info")
+        ctx.prnt("/chgmail <user>   - Email change instructions")
+        ctx.prnt("=== General Information ===")
+        ctx.prnt("/link <user>      - Useful TL links")
+        ctx.prnt("/irc <user>       - IRC registration guide")
+        ctx.prnt("/slots <user>     - Slots info link")
+        ctx.prnt("/class <user>     - User class info link")
+        ctx.prnt("/promo <user>     - Promo registration link")        
+        ctx.prnt("/imgur <user>     - Image upload instructions")
+        ctx.prnt("/pending <username> - confirm pending account")
+        ctx.prnt("===================")
+    return hexchat.EAT_ALL
+
+hexchat.hook_command("cmds", cmds_cmd, help="/cmds - List all TL commands")
